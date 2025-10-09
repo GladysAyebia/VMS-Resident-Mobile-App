@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/providers/code_provider.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/screens/visitor_pass_screen.dart';
+import 'package:vms_resident_app/src/features/shell/presentation/shell_screen.dart';
 
 class GenerateCodeScreen extends StatefulWidget {
   const GenerateCodeScreen({super.key});
@@ -169,7 +170,17 @@ class _GenerateCodeScreenState extends State<GenerateCodeScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              // fallback to ShellScreen if no previous page exists
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const ShellScreen()),
+              );
+            }
+          },
         ),
       ),
       body: Padding(
