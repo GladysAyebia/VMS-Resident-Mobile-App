@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:vms_resident_app/src/features/auth/models/resident_model.dart';
 import 'package:vms_resident_app/src/features/auth/repositories/auth_repository.dart';
@@ -17,6 +16,9 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  // ==========================
+  // Login
+  // ==========================
   Future<void> login(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
@@ -28,6 +30,28 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _isLoggedIn = false;
       _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ==========================
+  // Logout
+  // ==========================
+  Future<void> logout() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authRepository.logout(); // Optional backend logout
+      _resident = null;
+      _isLoggedIn = false;
+    } catch (e) {
+      debugPrint('Logout API failed: $e');
+      _resident = null;
+      _isLoggedIn = false;
     } finally {
       _isLoading = false;
       notifyListeners();

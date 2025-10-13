@@ -11,13 +11,13 @@ class Resident {
   final String? phone;
 
   @JsonKey(name: 'home', fromJson: _homeIdFromJson)
-final String? homeId;
+  final String? homeId;
 
-  final String? profilePicture; // nullable
+  final String? profilePicture;
   final String role;
-  final String? status; // nullable
-  final DateTime? createdAt; // nullable
-  final DateTime? updatedAt; // nullable
+  final String? status;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Resident({
     required this.id,
@@ -25,7 +25,7 @@ final String? homeId;
     required this.lastName,
     required this.email,
     this.phone,
-    required this.homeId,
+    this.homeId,
     this.profilePicture,
     required this.role,
     this.status,
@@ -37,9 +37,12 @@ final String? homeId;
       _$ResidentFromJson(json);
 
   Map<String, dynamic> toJson() => _$ResidentToJson(this);
+
+  // ✅ Computed property for full name
+  String get fullName => '$firstName $lastName';
 }
 
 String? _homeIdFromJson(Map<String, dynamic>? json) {
-  if (json == null) return null; // prevent null cast error
+  if (json == null) return null;
   return json['id'] as String?;
 }
