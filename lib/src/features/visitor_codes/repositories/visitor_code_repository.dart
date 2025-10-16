@@ -44,13 +44,27 @@ class VisitorCodeRepository {
           return data;
         } else if (data is Map) {
           debugPrint('✅ Response is a Map. Checking known structures...');
-          if (data['data'] is List) {
+          
+          // Check 1: API returns {success: true, data: {entries: [...]}} (Standard fix)
+          if (data['data'] is Map && data['data']['entries'] is List) {
+            debugPrint('📁 Found data["data"]["entries"] as List');
+            return data['data']['entries'] as List<dynamic>;
+          }
+          
+          // Check 2: API returns {success: true, data: [...] }
+          else if (data['data'] is List) {
             debugPrint('📁 Found data["data"] as List');
             return data['data'];
-          } else if (data['data'] is Map && data['data']['rows'] is List) {
+          } 
+          
+          // Check 3: API returns {success: true, data: {rows: [...]}}
+          else if (data['data'] is Map && data['data']['rows'] is List) {
             debugPrint('📁 Found data["data"]["rows"] as List');
             return data['data']['rows'];
-          } else if (data['data'] is Map && data['data']['visits'] is List) {
+          } 
+          
+          // Check 4: API returns {success: true, data: {visits: [...]}}
+          else if (data['data'] is Map && data['data']['visits'] is List) {
             debugPrint('📁 Found data["data"]["visits"] as List');
             return data['data']['visits'];
           } else {

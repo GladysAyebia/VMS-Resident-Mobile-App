@@ -119,95 +119,94 @@ class _VisitHistoryScreenState extends State<VisitHistoryScreen> {
   }
 }
 
+// ... (VisitHistoryScreen and _buildFilterTabs remain unchanged)
+
 class _HistoryLogTile extends StatelessWidget {
-  final dynamic log; // Map<String, dynamic> representing an EntryLog
+ final dynamic log; // Map<String, dynamic> representing an EntryLog
 
-  const _HistoryLogTile({required this.log});
+ const _HistoryLogTile({required this.log});
 
-  @override
-  Widget build(BuildContext context) {
-    // Assuming the log structure looks something like:
-    // { 
-    //   'visitor_name': 'John Doe', 
-    //   'access_code': 'G1H5R', 
-    //   'entry_time': '2024-05-10T10:30:00Z', 
-    //   'status': 'Granted',
-    //   'denial_reason': null
-    // }
-    final String visitorName = log['visitor_name'] ?? 'Unnamed Visitor';
-    final String accessCode = log['access_code'] ?? 'XXXXX';
-    final String status = log['status'] ?? 'Pending';
-    final DateTime? entryTime = log['entry_time'] != null 
-        ? DateTime.tryParse(log['entry_time'])?.toLocal() 
-        : null;
-
-    Color statusColor;
-    String statusText;
-
-    if (status == 'Granted') {
-      statusColor = Colors.green;
-      statusText = 'Granted ${entryTime != null ? DateFormat('HH:mm a').format(entryTime) : ''}';
-    } else if (status == 'Denied') {
-      statusColor = Colors.red;
-      statusText = 'Denied';
-    } else {
-      statusColor = Colors.orange;
-      statusText = 'Pending';
-    }
+ @override
+ Widget build(BuildContext context) {
+    // Keys observed in the debug output: code, visitor_name, validated_at, result, gate
     
-    final String dateDisplay = entryTime != null 
-        ? DateFormat('MMM d, yyyy').format(entryTime) 
-        : 'Unknown Date';
+  final String visitorName = log['visitor_name'] ?? 'Unnamed Visitor';
+    // The access code key is 'code' in the API response, not 'access_code'
+  final String accessCode = log['code'] ?? 'XXXXX'; // ✅ FIX 1: Use 'code' instead of 'access_code'
+  final String status = log['result'] ?? 'Pending'; // ✅ FIX 2: Use 'result' instead of 'status'
+    
+    // Check for 'validated_at' as the entry timestamp
+  final DateTime? entryTime = log['validated_at'] != null 
+    ? DateTime.tryParse(log['validated_at'])?.toLocal() // ✅ FIX 3: Use 'validated_at' instead of 'entry_time'
+    : null;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-      ),
-      child: Row(
-        children: [
-          // Status Indicator
-          CircleAvatar(
-            radius: 4,
-            backgroundColor: statusColor,
-          ),
-          const SizedBox(width: 12),
+  Color statusColor;
+  String statusText;
 
-          // Visitor Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  visitorName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$dateDisplay at ${entryTime != null ? DateFormat('h:mm a').format(entryTime) : 'N/A'}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-                if (status != 'Granted')
-                  Text(
-                    statusText,
-                    style: TextStyle(color: statusColor, fontSize: 13),
-                  ),
-              ],
-            ),
-          ),
-          
-          // Code and Chevron
-          Row(
-            children: [
-              Text(
-                accessCode,
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.grey),
-            ],
-          ),
-        ],
-      ),
-    );
+  if (status == 'granted') { // Status value is lowercase 'granted'
+   statusColor = Colors.green;
+   statusText = 'Granted ${entryTime != null ? DateFormat('HH:mm a').format(entryTime) : ''}';
+  } else if (status == 'denied') { // Status value would likely be lowercase 'denied'
+   statusColor = Colors.red;
+   statusText = 'Denied';
+  } else {
+   statusColor = Colors.orange;
+   statusText = 'Pending';
   }
+  
+  final String dateDisplay = entryTime != null 
+    ? DateFormat('MMM d, yyyy').format(entryTime) 
+    : 'Unknown Date';
+
+  return Container(
+   padding: const EdgeInsets.symmetric(vertical: 12),
+   decoration: BoxDecoration(
+    border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+   ),
+   child: Row(
+    children: [
+     // Status Indicator
+     CircleAvatar(
+      radius: 4,
+      backgroundColor: statusColor,
+     ),
+     const SizedBox(width: 12),
+
+     // Visitor Info
+     Expanded(
+      child: Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+        Text(
+         visitorName,
+         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 4),
+        Text(
+         '$dateDisplay at ${entryTime != null ? DateFormat('h:mm a').format(entryTime) : 'N/A'}',
+         style: TextStyle(color: Colors.grey[600], fontSize: 13),
+        ),
+        if (status != 'granted') // Check the lowercase status
+         Text(
+          statusText,
+          style: TextStyle(color: statusColor, fontSize: 13),
+         ),
+       ],
+      ),
+     ),
+     
+     // Code and Chevron
+     Row(
+      children: [
+       Text(
+        accessCode,
+        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+       ),
+       const Icon(Icons.chevron_right, color: Colors.grey),
+      ],
+     ),
+    ],
+   ),
+  );
+ }
 }

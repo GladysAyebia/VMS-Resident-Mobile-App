@@ -24,7 +24,7 @@ void main() {
         ChangeNotifierProvider(
           create: (_) => CodeProvider(codeRepository),
         ),
-        // ✅ ADDED: HistoryProvider to the list of available providers
+        // HistoryProvider to the list of available providers
         ChangeNotifierProvider<HistoryProvider>( 
           create: (_) => HistoryProvider(codeRepository),
         ),
