@@ -1,13 +1,16 @@
-// ignore_for_file: unused_element_parameter
+// VisitHistoryScreen.dart
 
+// ignore_for_file: unused_element_parameter
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/providers/visit_history_provider.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/repositories/visitor_code_repository.dart';
 import 'package:vms_resident_app/src/core/navigation/route_observer.dart';
+import 'package:vms_resident_app/src/features/shell/presentation/shell_screen.dart'; 
 
-const List<String> _filters = ['This Week', 'This Month', 'Last 3 Months'];
+// UPDATED: Use status-based filters
+const List<String> _filters = ['All', 'Pending', 'Validated', 'Expired', 'Cancelled'];
 
 class VisitHistoryScreen extends StatefulWidget {
   const VisitHistoryScreen({super.key});
@@ -17,16 +20,17 @@ class VisitHistoryScreen extends StatefulWidget {
 }
 
 class _VisitHistoryScreenState extends State<VisitHistoryScreen> with RouteAware {
-  String _selectedFilter = 'This Month';
+  // UPDATED: Default filter is 'All'
+  String _selectedFilter = 'All'; 
   double _opacity = 1.0;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-final route = ModalRoute.of(context);
-if (route is PageRoute) {
-  routeObserver.subscribe(this, route);
-}
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
   }
 
   @override
@@ -39,7 +43,8 @@ if (route is PageRoute) {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<HistoryProvider>(context, listen: false).setFilter(_selectedFilter);
+      // UPDATED: Use the new status-based method
+      Provider.of<HistoryProvider>(context, listen: false).setFilterByStatus(_selectedFilter); 
     });
   }
 
@@ -51,7 +56,8 @@ if (route is PageRoute) {
 
   Future<void> _refreshHistory() async {
     final provider = Provider.of<HistoryProvider>(context, listen: false);
-    await provider.setFilter(_selectedFilter);
+    // Use the new status-based method
+    await provider.setFilterByStatus(_selectedFilter); 
     if (!mounted) return;
 
     setState(() => _opacity = 0.0);
@@ -68,6 +74,22 @@ if (route is PageRoute) {
         title: const Text('Visit History'),
         centerTitle: true,
         elevation: 0,
+        // ADDED BACK BUTTON LOGIC HERE
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              // fallback to ShellScreen if no previous page exists
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const ShellScreen()),
+              );
+            }
+          },
+        ),
+        // END BACK BUTTON LOGIC
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
@@ -132,7 +154,8 @@ if (route is PageRoute) {
               child: InkWell(
                 onTap: () {
                   setState(() => _selectedFilter = filter);
-                  Provider.of<HistoryProvider>(context, listen: false).setFilter(filter);
+                  // UPDATED: Call the status-based filter method
+                  Provider.of<HistoryProvider>(context, listen: false).setFilterByStatus(filter); 
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -184,27 +207,49 @@ class _HistoryLogTileState extends State<_HistoryLogTile>
     final String visitorName = log['visitor_name'] ?? 'Unnamed Visitor';
     final String accessCode = log['code'] ?? 'N/A';
     final String status = log['status'] ?? 'pending';
+    debugPrint('🧩 Raw status from API: $status');
     final String? visitDateStr = log['visit_date'];
 
     DateTime? visitDate = DateTime.tryParse(visitDateStr ?? '');
     final String formattedDate = visitDate != null
         ? DateFormat('EEE, MMM d, yyyy').format(visitDate)
         : 'Unknown Date';
-
+    
+    // --- UPDATED STATUS MAPPING LOGIC ---
+    String displayStatus;
     Color statusColor;
+
     switch (status.toLowerCase()) {
       case 'active':
-      case 'granted':
+      case 'pending': 
+        // Requirement: If active, display as Pending
+        displayStatus = 'PENDING';
+        statusColor = Colors.orange;
+        break;
+      
+      case 'used':
+        // Requirement: If used, display as Validated
+        displayStatus = 'VALIDATED'; 
         statusColor = Colors.green;
         break;
+        
       case 'expired':
-      case 'cancelled':
-      case 'denied':
+        // Requirement: If expired, display as Expired
+        displayStatus = 'EXPIRED';
         statusColor = Colors.red;
         break;
+        
+      case 'cancelled':
+        // Requirement: If cancelled, display as Cancelled
+        displayStatus = 'CANCELLED'; 
+        statusColor = Colors.grey;
+        break;
+        
       default:
-        statusColor = Colors.orange;
+        displayStatus = status.toUpperCase();
+        statusColor = Colors.grey;
     }
+    // --- END UPDATED STATUS MAPPING LOGIC ---
 
     return AnimatedOpacity(
       opacity: _isDeleting ? 0.0 : 1.0,
@@ -225,7 +270,7 @@ class _HistoryLogTileState extends State<_HistoryLogTile>
           ),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: statusColor.withValues(alpha: 0.2),
+              backgroundColor: statusColor.withAlpha(51),
               child: Icon(Icons.person, color: statusColor),
             ),
             title: Text(
@@ -255,8 +300,9 @@ class _HistoryLogTileState extends State<_HistoryLogTile>
                           fontSize: 13,
                         ),
                       ),
+                      // USE THE NEW displayStatus VARIABLE
                       Text(
-                        status.toUpperCase(),
+                        displayStatus, 
                         style: TextStyle(
                           color: statusColor,
                           fontWeight: FontWeight.bold,
@@ -268,31 +314,41 @@ class _HistoryLogTileState extends State<_HistoryLogTile>
                 ],
               ),
             ),
+           // Corrected Code Snippet for trailing:
             trailing: SizedBox(
-  width: 70,
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-      Text(
-        accessCode,
-        textAlign: TextAlign.right,
-        style: const TextStyle(
-          color: Colors.blue,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-      ),
-      if (status.toLowerCase() == 'pending')
-        IconButton(
-          icon: const Icon(Icons.delete, color: Colors.redAccent),
-          tooltip: 'Delete code',
-          onPressed: () => _confirmDelete(codeId: log['id']),
-        ),
-    ],
-  ),
-),
-
+              width: 70,
+              child: Column(
+                // Use MainAxisAlignment.spaceBetween to distribute the space better
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // This Text will naturally go to the top
+                  Text(
+                    accessCode,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  // Only show delete button for active/pending codes
+                  if (status.toLowerCase() == 'active' || status.toLowerCase() == 'pending')
+                    // FIX: Wrap IconButton in a SizedBox to constrain its size and 
+                    // reduce the default padding.
+                    SizedBox( 
+                      height: 30, // Reduced height for the button/icon area
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20), // Reduced icon size
+                        padding: EdgeInsets.zero, // Remove internal button padding
+                        constraints: const BoxConstraints(), // Remove external button constraints
+                        tooltip: 'Delete code',
+                        onPressed: () => _confirmDelete(codeId: log['id']),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -300,6 +356,7 @@ class _HistoryLogTileState extends State<_HistoryLogTile>
   }
 
   void _confirmDelete({required String? codeId}) {
+    // ... (Your existing delete confirmation logic)
     if (codeId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Code ID not available')),

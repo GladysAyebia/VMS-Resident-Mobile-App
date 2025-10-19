@@ -1,5 +1,17 @@
+// HistoryProvider.dart
+
 import 'package:flutter/foundation.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/repositories/visitor_code_repository.dart';
+
+// MAPPING: UI Display Status to API Query Status
+const Map<String, String> uiToApiStatus = {
+      'All': 'all',
+    'Pending': 'active',    // UI Pending -> API active
+    'Validated': 'used',    // UI Validated -> API used
+    'Expired': 'expired',   // UI Expired -> API expired
+    'Cancelled': 'cancelled' // UI Cancelled -> API cancelled
+};
+
 
 class HistoryProvider extends ChangeNotifier {
   final VisitorCodeRepository _repository;
@@ -14,26 +26,17 @@ class HistoryProvider extends ChangeNotifier {
 
   String? errorMessage;
 
-  Future<void> setFilter(String filter) async {
+  // RENAMED and UPDATED method to handle status filtering
+  Future<void> setFilterByStatus(String uiFilter) async {
     _isLoading = true;
     notifyListeners();
-
+    
+    // Convert UI status to API status
+final String apiStatus = uiToApiStatus[uiFilter] ?? 'all';
     try {
-      final now = DateTime.now();
-      DateTime from;
-      DateTime to = now;
-
-      if (filter == 'This Week') {
-        from = now.subtract(Duration(days: now.weekday - 1));
-      } else if (filter == 'This Month') {
-        from = DateTime(now.year, now.month, 1);
-      } else {
-        from = DateTime(now.year, now.month - 3, 1);
-      }
-
+      // NOTE: Removed Date logic. If you need dates, you must integrate them here.
       final history = await _repository.getVisitHistory(
-        fromDate: from.toIso8601String().split('T').first,
-        toDate: to.toIso8601String().split('T').first,
+        status: apiStatus, 
         limit: 20,
         offset: 0,
       );
@@ -49,7 +52,7 @@ class HistoryProvider extends ChangeNotifier {
     }
   }
 
-  /// ✅ Add pending code immediately after generation
+  /// Add pending code immediately after generation
   void addTemporaryPendingCode(Map<String, dynamic> codeData) {
     // Avoid duplicates
     if (!_historyList.any((e) => e['id'] == codeData['id'])) {
