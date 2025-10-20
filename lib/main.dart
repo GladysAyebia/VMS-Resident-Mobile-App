@@ -11,10 +11,14 @@ import 'package:vms_resident_app/src/features/visitor_codes/providers/visit_hist
 import 'package:vms_resident_app/src/features/visitor_codes/repositories/visitor_code_repository.dart';
 import 'package:vms_resident_app/src/core/navigation/route_observer.dart';
 
+// Changed to async and added the binding initialization
+void main() async {
+  // CRITICAL: Ensures the Flutter engine is initialized before running any code 
+  // that interacts with the native platform (e.g., plugins, custom platform channels).
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
   final apiClient = ApiClient();
-  final authRepository = AuthRepository(apiClient);
+  final authRepository = AuthRepository(apiClient);      
   final codeRepository = VisitorCodeRepository(apiClient); 
 
   runApp(
