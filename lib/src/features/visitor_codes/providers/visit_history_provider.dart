@@ -1,17 +1,14 @@
-// HistoryProvider.dart
-
 import 'package:flutter/foundation.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/repositories/visitor_code_repository.dart';
 
-// MAPPING: UI Display Status to API Query Status
+/// MAPPING: UI Display Status to API Query Status
 const Map<String, String> uiToApiStatus = {
-      'All': 'all',
-    'Pending': 'active',    // UI Pending -> API active
-    'Validated': 'used',    // UI Validated -> API used
-    'Expired': 'expired',   // UI Expired -> API expired
-    'Cancelled': 'cancelled' // UI Cancelled -> API cancelled
+  'All': 'all',
+  'Pending': 'active',     // UI Pending → API active
+  'Validated': 'used',     // UI Validated → API used
+  'Expired': 'expired',    // UI Expired → API expired
+  'Cancelled': 'cancelled' // UI Cancelled → API cancelled
 };
-
 
 class HistoryProvider extends ChangeNotifier {
   final VisitorCodeRepository _repository;
@@ -24,23 +21,23 @@ class HistoryProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isDeleting = false;
+  bool get isDeleting => _isDeleting;
+
   String? errorMessage;
 
-  // RENAMED and UPDATED method to handle status filtering
+  /// Fetch visit history based on UI filter
   Future<void> setFilterByStatus(String uiFilter) async {
     _isLoading = true;
     notifyListeners();
-    
-    // Convert UI status to API status
-final String apiStatus = uiToApiStatus[uiFilter] ?? 'all';
+
+    final String apiStatus = uiToApiStatus[uiFilter] ?? 'all';
     try {
-      // NOTE: Removed Date logic. If you need dates, you must integrate them here.
       final history = await _repository.getVisitHistory(
-        status: apiStatus, 
+        status: apiStatus,
         limit: 20,
         offset: 0,
       );
-
       _historyList = history;
       errorMessage = null;
     } catch (e) {
@@ -52,11 +49,35 @@ final String apiStatus = uiToApiStatus[uiFilter] ?? 'all';
     }
   }
 
-  /// Add pending code immediately after generation
+  /// Add newly generated pending code immediately
   void addTemporaryPendingCode(Map<String, dynamic> codeData) {
-    // Avoid duplicates
     if (!_historyList.any((e) => e['id'] == codeData['id'])) {
       _historyList.insert(0, codeData);
+      notifyListeners();
+    }
+  }
+
+  /// ✅ Production-ready delete function
+  Future<void> deleteVisitorCode(String codeId) async {
+    try {
+      _isDeleting = true;
+      notifyListeners();
+
+      await _repository.cancelVisitorCode(codeId);
+
+      // Remove the deleted code from the list
+      _historyList.removeWhere((code) => code['id'] == codeId);
+
+      // Optionally refresh from server to ensure latest state
+      // await setFilterByStatus('All');
+
+      errorMessage = null;
+    } catch (e) {
+      errorMessage = 'Failed to delete visitor code: $e';
+      debugPrint(errorMessage);
+      rethrow;
+    } finally {
+      _isDeleting = false;
       notifyListeners();
     }
   }

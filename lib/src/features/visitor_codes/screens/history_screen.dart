@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/providers/visit_history_provider.dart';
-import 'package:vms_resident_app/src/features/visitor_codes/repositories/visitor_code_repository.dart';
 import 'package:vms_resident_app/src/core/navigation/route_observer.dart';
 import 'package:vms_resident_app/src/features/shell/presentation/shell_screen.dart'; 
 
@@ -199,6 +198,7 @@ class _HistoryLogTile extends StatefulWidget {
 
 class _HistoryLogTileState extends State<_HistoryLogTile>
     with SingleTickerProviderStateMixin {
+  // ignore: prefer_final_fields
   bool _isDeleting = false;
 
   @override
@@ -355,57 +355,60 @@ class _HistoryLogTileState extends State<_HistoryLogTile>
     );
   }
 
-  void _confirmDelete({required String? codeId}) {
-    // ... (Your existing delete confirmation logic)
-    if (codeId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Code ID not available')),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Visitor Code'),
-        content: const Text('Are you sure you want to delete this visitor code?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              try {
-                final repo = Provider.of<VisitorCodeRepository>(
-                  context,
-                  listen: false,
-                );
-
-                await repo.cancelVisitorCode(codeId);
-
-                if (!mounted) return;
-                setState(() => _isDeleting = true);
-
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Visitor code deleted')),
-                );
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to delete: $e')),
-                );
-              }
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.redAccent),
-            ),
-          ),
-        ],
-      ),
+void _confirmDelete({required String? codeId}) {
+  if (codeId == null) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Code ID not available')),
     );
+    return;
   }
+
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete Visitor Code'),
+      content: const Text('Are you sure you want to delete this visitor code?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () async {
+            // Close dialog first before any async call
+            Navigator.pop(dialogContext);
+
+            // ✅ Get provider before async call
+            final historyProvider = Provider.of<HistoryProvider>(
+              context,
+              listen: false,
+            );
+
+            try {
+              await historyProvider.deleteVisitorCode(codeId);
+
+              // ✅ Use mounted check before UI update
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Visitor code deleted')),
+              );
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to delete code: $e')),
+              );
+            }
+          },
+          child: const Text(
+            'Delete',
+            style: TextStyle(color: Colors.redAccent),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }
