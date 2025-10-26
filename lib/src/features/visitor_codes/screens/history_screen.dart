@@ -8,7 +8,7 @@ import 'package:vms_resident_app/src/features/visitor_codes/providers/visit_hist
 import 'package:vms_resident_app/src/core/navigation/route_observer.dart';
 import 'package:vms_resident_app/src/features/shell/presentation/shell_screen.dart'; 
 
-// UPDATED: Use status-based filters
+// Use status-based filters
 const List<String> _filters = ['All', 'Pending', 'Validated', 'Expired', 'Cancelled'];
 
 class VisitHistoryScreen extends StatefulWidget {
@@ -142,35 +142,38 @@ class _VisitHistoryScreenState extends State<VisitHistoryScreen> with RouteAware
   }
 
   Widget _buildFilterTabs() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+  return Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal, // allow horizontal scroll if filters overflow
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: _filters.map((filter) {
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: InkWell(
-                onTap: () {
-                  setState(() => _selectedFilter = filter);
-                  // UPDATED: Call the status-based filter method
-                  Provider.of<HistoryProvider>(context, listen: false).setFilterByStatus(filter); 
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _selectedFilter == filter ? Colors.blue : Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.shade100),
-                  ),
-                  child: Center(
-                    child: Text(
-                      filter,
-                      style: TextStyle(
-                        color: _selectedFilter == filter ? Colors.white : Colors.blue.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: InkWell(
+              onTap: () {
+                setState(() => _selectedFilter = filter);
+                Provider.of<HistoryProvider>(context, listen: false)
+                    .setFilterByStatus(filter);
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: _selectedFilter == filter
+                      ? Colors.blue
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade100),
+                ),
+                child: Text(
+                  filter,
+                  style: TextStyle(
+                    color: _selectedFilter == filter
+                        ? Colors.white
+                        : Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -178,8 +181,10 @@ class _VisitHistoryScreenState extends State<VisitHistoryScreen> with RouteAware
           );
         }).toList(),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
 
 class _HistoryLogTile extends StatefulWidget {
