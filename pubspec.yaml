@@ -37,14 +37,17 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/logo.png
+    - assets/images/logo_alone.jpg
+    - assets/images/logo_small.jpg
+    - assets/images/logo_name.jpg
 
 flutter_native_splash:
   color: "#000000"               
-  image: assets/images/logo.png 
+  image: assets/images/logo_alone.jpg 
   android_12:
-    image: assets/images/logo.png
+    image: assets/images/logo_alone.jpg
     color: "#000000"
     icon_background_color: "#000000"
-    #branding: assets/images/logo.pngh
-    image_dark: assets/images/logo.png
+    branding: assets/images/logo_name.jpg
+    image_dark: assets/images/logo_alone.jpg
 

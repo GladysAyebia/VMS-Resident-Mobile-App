@@ -207,7 +207,7 @@ class _HistoryLogTile extends StatefulWidget {
 
 class _HistoryLogTileState extends State<_HistoryLogTile>
     with SingleTickerProviderStateMixin {
-  bool _isDeleting = false;
+  final bool _isDeleting = false;
 
   @override
   Widget build(BuildContext context) {
