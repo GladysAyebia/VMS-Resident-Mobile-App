@@ -236,12 +236,15 @@ class _VisitorPassScreenState extends State<VisitorPassScreen> {
                                     fontWeight: FontWeight.bold,
                                     color: _goldColor)), // Gold color
                             const SizedBox(height: 5),
-                            const Text('RESIDENT: DAVID JOHNSON',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey)), // Grey for secondary info
-                            const Text('HOME: PLOT 12, MAPLE STREET',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey)), // Grey for secondary info
+                            Text(
+  'RESIDENT: ${widget.codeData['resident']?['name'] ?? 'Unknown Resident'}',
+  style: const TextStyle(fontSize: 16, color: Colors.grey),
+),
+Text(
+  'HOME: ${widget.codeData['resident']?['home'] ?? 'N/A'}',
+  style: const TextStyle(fontSize: 16, color: Colors.grey),
+),
+ // Grey for secondary info
                           ],
                         ),
                       ),

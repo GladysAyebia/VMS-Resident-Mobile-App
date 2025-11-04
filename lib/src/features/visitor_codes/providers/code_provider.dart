@@ -16,7 +16,7 @@ class CodeProvider extends ChangeNotifier {
   /// Generate a visitor code
   Future<void> generateCode({
     required BuildContext context,
-    required String visitorName,
+    String? visitorName,
     required String visitDate,
     required String startTime,
     required String endTime,
