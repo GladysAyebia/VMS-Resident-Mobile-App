@@ -1,5 +1,11 @@
 
 {
+  "builds": [
+    {
+      "src": "pubspec.yaml",
+      "use": "@vercel/flutter"
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
