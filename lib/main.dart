@@ -11,6 +11,7 @@ import 'package:vms_resident_app/src/features/visitor_codes/providers/code_provi
 import 'package:vms_resident_app/src/features/visitor_codes/providers/visit_history_provider.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/repositories/visitor_code_repository.dart';
 import 'package:vms_resident_app/src/core/navigation/route_observer.dart';
+import 'package:pwa_install/pwa_install.dart';
 
 // ThemeProvider class to manage the theme state
 class ThemeProvider with ChangeNotifier {
@@ -32,6 +33,9 @@ class ThemeProvider with ChangeNotifier {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Setup PWA install prompt for web
+  PWAInstall().setup(); // <-- Initialize PWA prompt
 
   final apiClient = ApiClient();
   final authRepository = AuthRepository(apiClient);
