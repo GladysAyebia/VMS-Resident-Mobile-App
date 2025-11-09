@@ -1,43 +1,52 @@
-
-# Project Blueprint
+# VMS Resident App Blueprint
 
 ## Overview
 
-This document outlines the structure, design, and features of the VMS Resident App. It serves as a single source of truth for the application's implementation details.
+This document outlines the architecture and implementation of the VMS Resident App, a Flutter-based mobile application designed for residents to manage visitor access.
 
-## Style, Design, and Features
+## Project Structure
 
-### Implemented
+- **`lib/`**: Main application code.
+  - **`main.dart`**: App entry point, theme definition, and routing.
+  - **`src/`**: Core application logic, features, and widgets.
+    - **`core/`**: Shared components like API clients, navigation, and error handlers.
+    - **`features/`**: Individual feature modules (e.g., `auth`, `visitor_codes`).
+      - **`auth/`**: User authentication (login, logout, session management).
+        - **`models/`**: Data models (e.g., `Resident`).
+        - **`providers/`**: State management (e.g., `AuthProvider`).
+        - **`repositories/`**: Data access logic.
+        - **`presentation/`**: UI components (pages, widgets).
+    - **`widgets/`**: Reusable UI widgets.
 
-* **Feature-first architecture:** The project is organized by features, such as auth, home, and visitor_codes.
-* **Navigation:** `go_router` is used for declarative routing.
-* **State Management:** `provider` is used for state management.
-* **Dependencies:**
-    * `dio` for network requests.
-    * `flutter_secure_storage` for secure storage.
-    * `google_fonts` for custom fonts.
-    * `intl` for internationalization.
-    * `json_annotation` and `json_serializable` for JSON serialization.
-    * `qr_flutter` for generating QR codes.
-    * `font_awesome_flutter` for icons.
-    * `url_launcher` for launching URLs.
-    * `path_provider` for path management.
-    * `share_plus` for sharing content.
-    * `screenshot` for taking screenshots.
-    * `http` for http requests.
-    * `image_picker` for picking images.
-    * `flutter_native_splash` for splash screen.
+## Features & Design
 
-### Current Task: Theme Refactoring
+### Authentication
 
-#### Plan
+- **Login**: Residents can log in with their email and password.
+- **Session Management**: The app maintains user sessions and directs users to the appropriate screen based on their authentication state.
+- **UI**: The login screen features a modern design with a logo, custom text fields, and a prominent login button.
 
-1.  **Centralize Theme:** Refactor the `main.dart` file to create a centralized `ThemeData` for both light and dark modes.
-    *   Use `ColorScheme.fromSeed` for a consistent color palette.
-    *   Integrate `google_fonts` for typography.
-    *   Use the `provider` package to create a theme provider for switching between light and dark modes.
-2.  **Refactor `history_screen.dart`:** Update the `history_screen.dart` to use the new centralized theme from `Theme.of(context)` instead of hardcoded colors and styles.
-3.  **Future Enhancements:**
-    * Apply the centralized theme to all screens for a consistent look and feel.
-    * Implement a settings screen where users can manually switch between light, dark, and system theme modes.
+### Navigation
 
+- **Initial Route**: The app now uses a `SplashScreen` to handle initial authentication checks, preventing redirect loops.
+- **Routing**: Named routes are used for navigation between screens.
+
+## Current Task: Fix Redirect Loop
+
+### Plan & Steps
+
+1.  **Create `SplashScreen`**: A new screen was introduced to manage the initial authentication flow.
+    - The `SplashScreen` checks if the user is logged in.
+    - If logged in, it navigates to the main `ShellScreen`.
+    - Otherwise, it navigates to the `LoginPage`.
+
+2.  **Update `main.dart`**:
+    - The initial route was changed from `LoginPage` to `SplashScreen`.
+    - The `SplashScreen` was added to the routes map.
+
+3.  **Update `AuthProvider`**:
+    - An `isLoggedIn` method was added to check for a token in secure storage.
+    - The `isLoggedIn` getter was renamed to `isLoggedInState` to avoid conflicts.
+
+4.  **Update `login_page.dart`**:
+    - The code was updated to use the `isLoggedInState` getter, ensuring consistency with the `AuthProvider`.

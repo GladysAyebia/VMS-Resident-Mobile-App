@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart'; // Import GoogleFonts
 import 'package:provider/provider.dart';
 import 'package:vms_resident_app/src/core/api_client.dart';
 import 'package:vms_resident_app/src/features/auth/providers/auth_provider.dart';
 import 'package:vms_resident_app/src/features/auth/repositories/auth_repository.dart';
 import 'package:vms_resident_app/src/features/auth/presentation/pages/login_page.dart';
 import 'package:vms_resident_app/src/features/auth/presentation/pages/forgot_password_screen.dart';
+import 'package:vms_resident_app/src/features/auth/presentation/pages/splash_screen.dart';
 import 'package:vms_resident_app/src/features/shell/presentation/shell_screen.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/providers/code_provider.dart';
 import 'package:vms_resident_app/src/features/visitor_codes/providers/visit_history_provider.dart';
@@ -68,7 +69,7 @@ class MyApp extends StatelessWidget {
     const Color primarySeedColor = Color(0xFF0057FF);
     const Color secondarySeedColor = Color(0xFF6C757D);
 
-    // Define a common TextTheme
+    // Define a common TextTheme using GoogleFonts
     final TextTheme appTextTheme = TextTheme(
       displayLarge: GoogleFonts.montserrat(fontSize: 57, fontWeight: FontWeight.bold),
       titleLarge: GoogleFonts.lato(fontSize: 22, fontWeight: FontWeight.w500),
@@ -138,8 +139,9 @@ class MyApp extends StatelessWidget {
           themeMode: themeProvider.themeMode,
           debugShowCheckedModeBanner: false,
           navigatorObservers: [routeObserver],
-          initialRoute: LoginPage.routeName,
+          initialRoute: SplashScreen.routeName,
           routes: {
+            SplashScreen.routeName: (_) => const SplashScreen(),
             LoginPage.routeName: (_) => const LoginPage(),
             ShellScreen.routeName: (_) => const ShellScreen(),
             ForgotPasswordScreen.routeName: (_) => const ForgotPasswordScreen(),

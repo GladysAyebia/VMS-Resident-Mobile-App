@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     if (!mounted) return;
 
-                    if (authProvider.isLoggedIn) {
+                    if (authProvider.isLoggedInState) {
                       navigator.pushReplacementNamed(ShellScreen.routeName);
                     } else {
                       scaffoldMessenger.showSnackBar(

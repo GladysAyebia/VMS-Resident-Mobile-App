@@ -16,9 +16,22 @@ class AuthProvider with ChangeNotifier {
   AuthProvider(this._authRepository);
 
   Resident? get resident => _resident;
-  bool get isLoggedIn => _isLoggedIn;
+  bool get isLoggedInState => _isLoggedIn;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+Future<bool> isLoggedIn() async {
+    final token = await this.token;
+    if (token != null) {
+      _isLoggedIn = true;
+      notifyListeners();
+      return true;
+    } else {
+      _isLoggedIn = false;
+      notifyListeners();
+      return false;
+    }
+  }
 
   // ==========================
   // Login
