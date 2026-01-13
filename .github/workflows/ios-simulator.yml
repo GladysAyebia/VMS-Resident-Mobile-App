@@ -1,0 +1,37 @@
+name: iOS Simulator Build (Appetize)
+on: 
+  workflow_dispatch: # Allows you to click "Run workflow" manually
+  push:
+    branches: [ main, master ] # Runs when you push code
+
+jobs:
+  build_sim:
+    name: Build for Appetize
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Simulator App
+        run: |
+          # The --simulator flag is the key here
+          flutter build ios --simulator --debug --no-codesign
+
+      - name: Zip for Appetize
+        run: |
+          # Move to the build folder and zip the Runner.app
+          cd build/ios/iphonesimulator
+          zip -r simulator_app.zip Runner.app
+
+      - name: Upload to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: appetize-zip-file
+          path: build/ios/iphonesimulator/simulator_app.zip
